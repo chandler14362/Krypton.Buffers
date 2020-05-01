@@ -8,26 +8,26 @@ namespace Krypton.Buffers
     {
         private ReadOnlyMemory<byte> _buffer;
 
-        private int _offset;
-
+        public int Offset { get; private set; }
+        
         public MemoryBufferReader(ReadOnlyMemory<byte> buffer)
         {
             _buffer = buffer;
-            _offset = 0;
+            Offset = 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlyMemory<byte> ReadBytes(int count)
         {
-            var mem = _buffer.Slice(_offset, count);
-            _offset += count;
+            var mem = _buffer.Slice(Offset, count);
+            Offset += count;
             return mem;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadByte()
         {
-            return _buffer.Span[_offset++];
+            return _buffer.Span[Offset++];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -93,16 +93,19 @@ namespace Krypton.Buffers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public char ReadChar()
         {
-            return (char)_buffer.Span[_offset++];
+            return (char)_buffer.Span[Offset++];
         }
 
         public string ReadString8()
         {
             var size = ReadUInt16();
-            Span<char> str = size < 256 ? stackalloc char[size] : new char[size];
-            for (var i = 0; i < size; i++)
-                str[i] = (char)this.ReadByte();
-            return new string(str);
+            return string.Create(size, this, (str, reader) =>
+            {
+                for (var i = 0; i < str.Length; i++)
+                {
+                    str[i] = (char)reader.ReadUInt8();
+                }
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -121,13 +124,11 @@ namespace Krypton.Buffers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SkipBytes(int n)
         {
-            _offset += (ushort)n;
+            Offset += (ushort)n;
         }
 
-        public ReadOnlyMemory<byte> RemainingData => _buffer.Slice(_offset);
+        public ReadOnlyMemory<byte> RemainingData => _buffer.Slice(Offset);
 
-        public int RemainingSize => _buffer.Length - _offset;
-
-        public int Offset => _offset;
+        public int RemainingSize => _buffer.Length - Offset;
     }
 }

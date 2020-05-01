@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 
 namespace Krypton.Buffers
 {
-    public class GrowingMemoryBuffer
+    public ref struct GrowingSpanBuffer
     {
         public readonly struct Bookmark
         {
@@ -20,11 +21,11 @@ namespace Krypton.Buffers
 
         public static int GROWTH_FACTOR = 2;
 
-        private Memory<byte> _buffer;
+        private Span<byte> _buffer;
 
         private int _offset;
 
-        public GrowingMemoryBuffer(Memory<byte> buffer)
+        public GrowingSpanBuffer(Span<byte> buffer)
         {
             _buffer = buffer;
             _offset = 0;
@@ -48,7 +49,7 @@ namespace Krypton.Buffers
         public void WriteBool(bool x)
         {
             Reserve(1);
-            _buffer.Span[_offset++] = x ? (byte)1 : (byte)0;
+            _buffer[_offset++] = x ? (byte)1 : (byte)0;
         }
 
 
@@ -56,14 +57,14 @@ namespace Krypton.Buffers
         public void WriteInt8(sbyte x)
         {
             Reserve(1);
-            _buffer.Span[_offset++] = (byte)x;
+            _buffer[_offset++] = (byte)x;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteUInt8(byte x)
         {
             Reserve(1);
-            _buffer.Span[_offset++] = x;
+            _buffer[_offset++] = x;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -71,7 +72,7 @@ namespace Krypton.Buffers
         {
             const int size = sizeof(short);
             Reserve(size);
-            BinaryPrimitives.WriteInt16LittleEndian(_buffer.Span.Slice(_offset), x);
+            BinaryPrimitives.WriteInt16LittleEndian(_buffer.Slice(_offset), x);
             _offset += size;
         }
 
@@ -80,7 +81,7 @@ namespace Krypton.Buffers
         {
             const int size = sizeof(ushort);
             Reserve(size);
-            BinaryPrimitives.WriteUInt16LittleEndian(_buffer.Span.Slice(_offset), x);
+            BinaryPrimitives.WriteUInt16LittleEndian(_buffer.Slice(_offset), x);
             _offset += size;
         }
 
@@ -89,7 +90,7 @@ namespace Krypton.Buffers
         {
             const int size = sizeof(int);
             Reserve(size);
-            BinaryPrimitives.WriteInt32LittleEndian(_buffer.Span.Slice(_offset), x);
+            BinaryPrimitives.WriteInt32LittleEndian(_buffer.Slice(_offset), x);
             _offset += size;
         }
 
@@ -98,7 +99,7 @@ namespace Krypton.Buffers
         {
             const int size = sizeof(uint);
             Reserve(size);
-            BinaryPrimitives.WriteUInt32LittleEndian(_buffer.Span.Slice(_offset), x);
+            BinaryPrimitives.WriteUInt32LittleEndian(_buffer.Slice(_offset), x);
             _offset += size;
         }
 
@@ -107,7 +108,7 @@ namespace Krypton.Buffers
         {
             const int size = sizeof(ulong);
             Reserve(size);
-            BinaryPrimitives.WriteUInt64LittleEndian(_buffer.Span.Slice(_offset), x);
+            BinaryPrimitives.WriteUInt64LittleEndian(_buffer.Slice(_offset), x);
             _offset += size;
         }
 
@@ -116,7 +117,7 @@ namespace Krypton.Buffers
         {
             const int size = sizeof(long);
             Reserve(size);
-            BinaryPrimitives.WriteInt64LittleEndian(_buffer.Span.Slice(_offset), x);
+            BinaryPrimitives.WriteInt64LittleEndian(_buffer.Slice(_offset), x);
             _offset += size;
         }
 
@@ -133,27 +134,18 @@ namespace Krypton.Buffers
         public void WriteString8(string x)
         {
             Reserve(x.Length + 2);
-            BinaryPrimitives.WriteUInt16LittleEndian(_buffer.Span.Slice(_offset), (ushort)x.Length);
+            BinaryPrimitives.WriteUInt16LittleEndian(_buffer.Slice(_offset), (ushort)x.Length);
             _offset += 2;
 
-            var span = _buffer.Span;
             for (var i = 0; i < x.Length; i++)
-                span[_offset++] = (byte)x[i];
+                _buffer[_offset++] = (byte)x[i];
         }
 
         public void WriteBytes(ReadOnlySpan<byte> x)
         {
             Reserve(x.Length);
-            x.CopyTo(_buffer.Span.Slice(_offset));
+            x.CopyTo(_buffer.Slice(_offset));
             _offset += x.Length;
-        }
-
-        public void WriteBlob(ReadOnlySpan<byte> x)
-        {
-            Reserve(x.Length + 2);
-            BinaryPrimitives.WriteUInt16LittleEndian(_buffer.Span.Slice(_offset), (ushort)x.Length);
-            x.CopyTo(_buffer.Span.Slice(_offset + 2));
-            _offset += x.Length + 2;
         }
 
         public Bookmark ReserveBookmark(int size)
@@ -167,7 +159,7 @@ namespace Krypton.Buffers
         public void WriteBookmark<TState>(in Bookmark bookmark, TState state, SpanAction<byte, TState> output)
         {
             var slice = _buffer.Slice(bookmark.Offset, bookmark.Size);
-            output(slice.Span, state);
+            output(slice, state);
         }
 
         public void PadBytes(int n)
@@ -176,7 +168,7 @@ namespace Krypton.Buffers
             _offset += n;
         }
 
-        public ReadOnlyMemory<byte> Data => _buffer.Slice(0, _offset);
+        public ReadOnlySpan<byte> Data => _buffer.Slice(0, _offset);
 
         public int Size => _offset;
     }

@@ -9,18 +9,18 @@ namespace Krypton.Buffers
     {
         private ReadOnlySpan<byte> _buffer;
 
-        private int _offset;
-
+        public int Offset { get; private set; }
+        
         public SpanBufferReader(ReadOnlySpan<byte> buffer)
         {
             _buffer = buffer;
-            _offset = 0;
+            Offset = 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadByte()
         {
-            return _buffer[_offset++];
+            return _buffer[Offset++];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -45,8 +45,8 @@ namespace Krypton.Buffers
         public ushort ReadUInt16()
         {
             const int size = sizeof(ushort);
-            var x = BinaryPrimitives.ReadUInt16LittleEndian(_buffer.Slice(_offset));
-            _offset += size;
+            var x = BinaryPrimitives.ReadUInt16LittleEndian(_buffer.Slice(Offset));
+            Offset += size;
             return x;
         }
 
@@ -54,8 +54,8 @@ namespace Krypton.Buffers
         public short ReadInt16()
         {
             const int size = sizeof(short);
-            var x = BinaryPrimitives.ReadInt16LittleEndian(_buffer.Slice(_offset));
-            _offset += size;
+            var x = BinaryPrimitives.ReadInt16LittleEndian(_buffer.Slice(Offset));
+            Offset += size;
             return x;
         }
 
@@ -63,8 +63,8 @@ namespace Krypton.Buffers
         public uint ReadUInt32()
         {
             const int size = sizeof(uint);
-            var x = BinaryPrimitives.ReadUInt32LittleEndian(_buffer.Slice(_offset));
-            _offset += size;
+            var x = BinaryPrimitives.ReadUInt32LittleEndian(_buffer.Slice(Offset));
+            Offset += size;
             return x;
         }
 
@@ -72,8 +72,8 @@ namespace Krypton.Buffers
         public int ReadInt32()
         {
             const int size = sizeof(int);
-            var x = BinaryPrimitives.ReadInt32LittleEndian(_buffer.Slice(_offset));
-            _offset += size;
+            var x = BinaryPrimitives.ReadInt32LittleEndian(_buffer.Slice(Offset));
+            Offset += size;
             return x;
         }
 
@@ -81,8 +81,8 @@ namespace Krypton.Buffers
         public ulong ReadUInt64()
         {
             const int size = sizeof(ulong);
-            var x = BinaryPrimitives.ReadUInt64LittleEndian(_buffer.Slice(_offset));
-            _offset += size;
+            var x = BinaryPrimitives.ReadUInt64LittleEndian(_buffer.Slice(Offset));
+            Offset += size;
             return x;
         }
 
@@ -90,16 +90,16 @@ namespace Krypton.Buffers
         public long ReadInt64()
         {
             const int size = sizeof(long);
-            var x = BinaryPrimitives.ReadInt64LittleEndian(_buffer.Slice(_offset));
-            _offset += size;
+            var x = BinaryPrimitives.ReadInt64LittleEndian(_buffer.Slice(Offset));
+            Offset += size;
             return x;
         }
 
         // TODO: Document the functionality of this method
         public ReadOnlySpan<ulong> ReadUInt64Array(int count)
         {
-            var x = MemoryMarshal.Cast<byte, ulong>(_buffer.Slice(_offset));
-            _offset += 8 * count;
+            var x = MemoryMarshal.Cast<byte, ulong>(_buffer.Slice(Offset));
+            Offset += 8 * count;
 
             if (BitConverter.IsLittleEndian)
                 return x.Slice(0, count);
@@ -122,16 +122,14 @@ namespace Krypton.Buffers
 
         public void SkipBytes(int bytes)
         {
-            _offset += bytes;
+            Offset += bytes;
         }
 
-        public ReadOnlySpan<byte> RemainingData => _buffer.Slice(_offset);
+        public ReadOnlySpan<byte> RemainingData => _buffer.Slice(Offset);
 
         /// <summary>
         /// Gets the amount of remaining bytes in the <see cref="SpanBufferReader"/>.
         /// </summary>
-        public readonly int RemainingSize => _buffer.Length - _offset;
-
-        public int Offset => _offset;
+        public readonly int RemainingSize => _buffer.Length - Offset;
     }
 }
