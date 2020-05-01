@@ -17,6 +17,13 @@ namespace Krypton.Buffers
             Offset = 0;
         }
 
+        public ReadOnlySpan<byte> ReadBytes(int count)
+        {
+            var slice = _buffer.Slice(Offset, count);
+            Offset += count;
+            return slice;
+        }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadByte()
         {
@@ -109,6 +116,32 @@ namespace Krypton.Buffers
                 flipped[i] = BinaryPrimitives.ReverseEndianness(x[i]);
 
             return flipped;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float ReadFloat32()
+        {
+            // TODO: big endian support
+            if (!BitConverter.IsLittleEndian)
+                throw new NotImplementedException();
+
+            const int size = sizeof(float);
+            var x = MemoryMarshal.Read<float>(_buffer.Slice(Offset));
+            Offset += size;
+            return x;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public double ReadFloat64()
+        {
+            // TODO: big endian support
+            if (!BitConverter.IsLittleEndian)
+                throw new NotImplementedException();
+            
+            const int size = sizeof(double);
+            var x = MemoryMarshal.Read<double>(_buffer.Slice(Offset));
+            Offset += size;
+            return x;
         }
 
         public string ReadString8()

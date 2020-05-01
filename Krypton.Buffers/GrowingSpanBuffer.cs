@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Krypton.Buffers
 {
@@ -18,7 +19,7 @@ namespace Krypton.Buffers
                 Size = size;
             }
         }
-
+        
         public static int GROWTH_FACTOR = 2;
 
         private Span<byte> _buffer;
@@ -123,12 +124,26 @@ namespace Krypton.Buffers
 
         public void WriteFloat32(float x)
         {
-            throw new NotImplementedException();
+            // TODO: big endian support
+            if (!BitConverter.IsLittleEndian)
+                throw new NotImplementedException();
+            
+            const int size = sizeof(float);
+            Reserve(size);
+            MemoryMarshal.Write(_buffer.Slice(_offset), ref x);
+            _offset += size;
         }
 
         public void WriteFloat64(double x)
         {
-            throw new NotImplementedException();
+            // TODO: big endian support
+            if (!BitConverter.IsLittleEndian)
+                throw new NotImplementedException();
+            
+            const int size = sizeof(double);
+            Reserve(size);            
+            MemoryMarshal.Write(_buffer.Slice(_offset), ref x);
+            _offset += size;
         }
 
         public void WriteString8(string x)

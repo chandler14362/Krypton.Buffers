@@ -102,17 +102,8 @@ namespace Krypton.Buffers
             return string.Create(size, this, (str, reader) =>
             {
                 for (var i = 0; i < str.Length; i++)
-                {
-                    str[i] = (char)reader.ReadUInt8();
-                }
+                    str[i] = (char) reader.ReadUInt8();
             });
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlyMemory<byte> ReadBlob()
-        {
-            var size = ReadUInt16();
-            return ReadBytes(size);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
