@@ -53,7 +53,6 @@ namespace Krypton.Buffers
             _buffer.Span[_offset++] = x ? (byte)1 : (byte)0;
         }
 
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteInt8(sbyte x)
         {
@@ -145,6 +144,14 @@ namespace Krypton.Buffers
             MemoryMarshal.Write(_buffer.Span.Slice(_offset), ref x);
             _offset += size;
         }
+        
+        public void WriteGuid(Guid guid)
+        {
+            const int size = 16;
+            Reserve(16);
+            _ = guid.TryWriteBytes(_buffer.Slice(_offset).Span);
+            _offset += size;
+        }
 
         public void WriteString8(string x)
         {
@@ -163,15 +170,7 @@ namespace Krypton.Buffers
             x.CopyTo(_buffer.Span.Slice(_offset));
             _offset += x.Length;
         }
-
-        public void WriteBlob(ReadOnlySpan<byte> x)
-        {
-            Reserve(x.Length + 2);
-            BinaryPrimitives.WriteUInt16LittleEndian(_buffer.Span.Slice(_offset), (ushort)x.Length);
-            x.CopyTo(_buffer.Span.Slice(_offset + 2));
-            _offset += x.Length + 2;
-        }
-
+        
         public Bookmark ReserveBookmark(int size)
         {
             Reserve(size);

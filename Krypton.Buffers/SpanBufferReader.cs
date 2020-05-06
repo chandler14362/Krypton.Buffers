@@ -57,6 +57,22 @@ namespace Krypton.Buffers
             return x;
         }
 
+        public ReadOnlySpan<ushort> ReadUInt16Slice(int count)
+        {
+            const int isize = sizeof(ushort);
+            var x = MemoryMarshal.Cast<byte, ushort>(_buffer.Slice(Offset));
+            Offset += isize * count;
+
+            if (BitConverter.IsLittleEndian)
+                return x.Slice(0, count);
+
+            var flipped = new ushort[count];
+            for (var i = 0; i < count; i++)
+                flipped[i] = BinaryPrimitives.ReverseEndianness(x[i]);
+
+            return flipped;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public short ReadInt16()
         {
@@ -64,6 +80,22 @@ namespace Krypton.Buffers
             var x = BinaryPrimitives.ReadInt16LittleEndian(_buffer.Slice(Offset));
             Offset += size;
             return x;
+        }
+        
+        public ReadOnlySpan<short> ReadInt16Slice(int count)
+        {
+            const int isize = sizeof(short);
+            var x = MemoryMarshal.Cast<byte, short>(_buffer.Slice(Offset));
+            Offset += isize * count;
+
+            if (BitConverter.IsLittleEndian)
+                return x.Slice(0, count);
+
+            var flipped = new short[count];
+            for (var i = 0; i < count; i++)
+                flipped[i] = BinaryPrimitives.ReverseEndianness(x[i]);
+
+            return flipped;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -75,6 +107,22 @@ namespace Krypton.Buffers
             return x;
         }
 
+        public ReadOnlySpan<uint> ReadUInt32Slice(int count)
+        {
+            const int isize = sizeof(uint);
+            var x = MemoryMarshal.Cast<byte, uint>(_buffer.Slice(Offset));
+            Offset += isize * count;
+
+            if (BitConverter.IsLittleEndian)
+                return x.Slice(0, count);
+
+            var flipped = new uint[count];
+            for (var i = 0; i < count; i++)
+                flipped[i] = BinaryPrimitives.ReverseEndianness(x[i]);
+
+            return flipped;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int ReadInt32()
         {
@@ -82,6 +130,22 @@ namespace Krypton.Buffers
             var x = BinaryPrimitives.ReadInt32LittleEndian(_buffer.Slice(Offset));
             Offset += size;
             return x;
+        }
+        
+        public ReadOnlySpan<int> ReadInt32Slice(int count)
+        {
+            const int isize = sizeof(int);
+            var x = MemoryMarshal.Cast<byte, int>(_buffer.Slice(Offset));
+            Offset += isize * count;
+
+            if (BitConverter.IsLittleEndian)
+                return x.Slice(0, count);
+
+            var flipped = new int[count];
+            for (var i = 0; i < count; i++)
+                flipped[i] = BinaryPrimitives.ReverseEndianness(x[i]);
+
+            return flipped;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -93,6 +157,22 @@ namespace Krypton.Buffers
             return x;
         }
 
+        public ReadOnlySpan<ulong> ReadUInt64Slice(int count)
+        {
+            const int isize = sizeof(ulong);
+            var x = MemoryMarshal.Cast<byte, ulong>(_buffer.Slice(Offset));
+            Offset += isize * count;
+
+            if (BitConverter.IsLittleEndian)
+                return x.Slice(0, count);
+
+            var flipped = new ulong[count];
+            for (var i = 0; i < count; i++)
+                flipped[i] = BinaryPrimitives.ReverseEndianness(x[i]);
+
+            return flipped;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public long ReadInt64()
         {
@@ -102,16 +182,16 @@ namespace Krypton.Buffers
             return x;
         }
 
-        // TODO: Document the functionality of this method
-        public ReadOnlySpan<ulong> ReadUInt64Array(int count)
+        public ReadOnlySpan<long> ReadInt64Slice(int count)
         {
-            var x = MemoryMarshal.Cast<byte, ulong>(_buffer.Slice(Offset));
-            Offset += 8 * count;
+            const int isize = sizeof(long);
+            var x = MemoryMarshal.Cast<byte, long>(_buffer.Slice(Offset));
+            Offset += isize * count;
 
             if (BitConverter.IsLittleEndian)
                 return x.Slice(0, count);
 
-            var flipped = new ulong[count];
+            var flipped = new long[count];
             for (var i = 0; i < count; i++)
                 flipped[i] = BinaryPrimitives.ReverseEndianness(x[i]);
 
@@ -142,6 +222,14 @@ namespace Krypton.Buffers
             var x = MemoryMarshal.Read<double>(_buffer.Slice(Offset));
             Offset += size;
             return x;
+        }
+
+        public Guid ReadGuid()
+        {
+            const int size = 16;
+            var guid = new Guid(_buffer.Slice(Offset, size));
+            Offset += size;    
+            return guid;
         }
 
         public string ReadString8()

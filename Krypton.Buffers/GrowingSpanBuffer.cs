@@ -53,7 +53,6 @@ namespace Krypton.Buffers
             _buffer[_offset++] = x ? (byte)1 : (byte)0;
         }
 
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteInt8(sbyte x)
         {
@@ -143,6 +142,14 @@ namespace Krypton.Buffers
             const int size = sizeof(double);
             Reserve(size);            
             MemoryMarshal.Write(_buffer.Slice(_offset), ref x);
+            _offset += size;
+        }
+
+        public void WriteGuid(Guid guid)
+        {
+            const int size = 16;
+            Reserve(16);
+            _ = guid.TryWriteBytes(_buffer.Slice(_offset));
             _offset += size;
         }
 
