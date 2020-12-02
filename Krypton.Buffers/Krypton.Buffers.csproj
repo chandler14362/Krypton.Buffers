@@ -14,10 +14,4 @@
     <copyright>Copyright 2020</copyright>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="..\README.md">
-      <Link>README.md</Link>
-    </Content>
-  </ItemGroup>
-
 </Project>
