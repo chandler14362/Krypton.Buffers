@@ -33,7 +33,7 @@ If you want to write to a fixed size buffer without any resizing you can do so.
 ```cs
 try 
 {
-    using var bufferWriter = new SpanBufferWriter(someFixedSizeBuffer, resize=false);
+    using var bufferWriter = new SpanBufferWriter(someFixedSizeBuffer, resize: false);
     bufferWriter.WriteUTF8String("I hope there is enough space for this");
 }
 catch (OutOfSpaceException)
@@ -155,7 +155,7 @@ public class ExamplePoolingStrategy : IPoolingStrategy
     }
 }
 
-using var bufferWriter = new SpanBufferWriter(stackalloc byte[4], poolingStrategy=ExamplePoolingStrategy.Instance);
+using var bufferWriter = new SpanBufferWriter(stackalloc byte[4], poolingStrategy: ExamplePoolingStrategy.Instance);
 bufferWriter.WriteUInt32(4); // this gets written to the initial buffer that exists on the stack
 bufferWriter.WriteUTF16String("hello heap!"); // the buffer resizes using ArrayPool and the data gets relocated on to the heap
 ```
