@@ -1,4 +1,4 @@
-# Krypton.Buffers
+# Krypton.Buffers (2.0.0)
 
 ## Types
 
@@ -133,7 +133,7 @@ public class ExamplePoolingStrategy : IPoolingStrategy
 
     public static readonly IPoolingStrategy Instance = new ExamplePoolingStrategy();
     
-    private readonly ArrayPool<byte> _arrayPool = = ArrayPool<byte>.Create();
+    private readonly ArrayPool<byte> _arrayPool = ArrayPool<byte>.Create();
 
     private ExamplePoolingStrategy()
     {
