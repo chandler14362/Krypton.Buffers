@@ -2,6 +2,7 @@
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Krypton.Buffers
 {
@@ -18,8 +19,16 @@ namespace Krypton.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ThrowIfEndOfBuffer(int neededSize)
+        {
+            if (Offset + neededSize > _buffer.Length)
+                throw new EndOfBufferException(_buffer.Length, Offset, neededSize);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlyMemory<byte> ReadBytes(int count)
         {
+            ThrowIfEndOfBuffer(count);
             var mem = _buffer.Slice(Offset, count);
             Offset += count;
             return mem;
@@ -28,6 +37,7 @@ namespace Krypton.Buffers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadByte()
         {
+            ThrowIfEndOfBuffer(sizeof(byte));
             return _buffer.Span[Offset++];
         }
 
@@ -53,6 +63,8 @@ namespace Krypton.Buffers
         public ushort ReadUInt16()
         {
             const int size = sizeof(ushort);
+            ThrowIfEndOfBuffer(size);
+            
             var x = BinaryPrimitives.ReadUInt16LittleEndian(_buffer.Slice(Offset).Span);
             Offset += size;
             return x;
@@ -61,6 +73,8 @@ namespace Krypton.Buffers
         public ReadOnlySpan<ushort> ReadUInt16Slice(int count)
         {
             const int isize = sizeof(ushort);
+            ThrowIfEndOfBuffer(isize * count);
+            
             var x = MemoryMarshal.Cast<byte, ushort>(_buffer.Slice(Offset).Span);
             Offset += isize * count;
 
@@ -78,6 +92,8 @@ namespace Krypton.Buffers
         public short ReadInt16()
         {
             const int size = sizeof(short);
+            ThrowIfEndOfBuffer(size);
+            
             var x = BinaryPrimitives.ReadInt16LittleEndian(_buffer.Slice(Offset).Span);
             Offset += size;
             return x;
@@ -86,6 +102,8 @@ namespace Krypton.Buffers
         public ReadOnlySpan<short> ReadInt16Slice(int count)
         {
             const int isize = sizeof(short);
+            ThrowIfEndOfBuffer(isize * count);
+            
             var x = MemoryMarshal.Cast<byte, short>(_buffer.Slice(Offset).Span);
             Offset += isize * count;
 
@@ -103,6 +121,8 @@ namespace Krypton.Buffers
         public uint ReadUInt32()
         {
             const int size = sizeof(uint);
+            ThrowIfEndOfBuffer(size);
+            
             var x = BinaryPrimitives.ReadUInt32LittleEndian(_buffer.Slice(Offset).Span);
             Offset += size;
             return x;
@@ -111,6 +131,8 @@ namespace Krypton.Buffers
         public ReadOnlySpan<uint> ReadUInt32Slice(int count)
         {
             const int isize = sizeof(uint);
+            ThrowIfEndOfBuffer(isize * count);
+            
             var x = MemoryMarshal.Cast<byte, uint>(_buffer.Slice(Offset).Span);
             Offset += isize * count;
 
@@ -128,6 +150,8 @@ namespace Krypton.Buffers
         public int ReadInt32()
         {
             const int size = sizeof(int);
+            ThrowIfEndOfBuffer(size);
+            
             var x = BinaryPrimitives.ReadInt32LittleEndian(_buffer.Slice(Offset).Span);
             Offset += size;
             return x;
@@ -136,6 +160,8 @@ namespace Krypton.Buffers
         public ReadOnlySpan<int> ReadInt32Slice(int count)
         {
             const int isize = sizeof(int);
+            ThrowIfEndOfBuffer(isize * count);
+            
             var x = MemoryMarshal.Cast<byte, int>(_buffer.Slice(Offset).Span);
             Offset += isize * count;
 
@@ -153,6 +179,8 @@ namespace Krypton.Buffers
         public ulong ReadUInt64()
         {
             const int size = sizeof(ulong);
+            ThrowIfEndOfBuffer(size);
+            
             var x = BinaryPrimitives.ReadUInt64LittleEndian(_buffer.Slice(Offset).Span);
             Offset += size;
             return x;
@@ -161,6 +189,8 @@ namespace Krypton.Buffers
         public ReadOnlySpan<ulong> ReadUInt64Slice(int count)
         {
             const int isize = sizeof(ulong);
+            ThrowIfEndOfBuffer(isize * count);
+            
             var x = MemoryMarshal.Cast<byte, ulong>(_buffer.Slice(Offset).Span);
             Offset += isize * count;
 
@@ -178,6 +208,8 @@ namespace Krypton.Buffers
         public long ReadInt64()
         {
             const int size = sizeof(long);
+            ThrowIfEndOfBuffer(size);
+            
             var x = BinaryPrimitives.ReadInt64LittleEndian(_buffer.Slice(Offset).Span);
             Offset += size;
             return x;
@@ -186,6 +218,8 @@ namespace Krypton.Buffers
         public ReadOnlySpan<long> ReadInt64Slice(int count)
         {
             const int isize = sizeof(long);
+            ThrowIfEndOfBuffer(isize * count);
+            
             var x = MemoryMarshal.Cast<byte, long>(_buffer.Slice(Offset).Span);
             Offset += isize * count;
 
@@ -207,6 +241,8 @@ namespace Krypton.Buffers
                 throw new NotImplementedException();
 
             const int size = sizeof(float);
+            ThrowIfEndOfBuffer(size);
+            
             var x = MemoryMarshal.Read<float>(_buffer.Slice(Offset).Span);
             Offset += size;
             return x;
@@ -220,6 +256,8 @@ namespace Krypton.Buffers
                 throw new NotImplementedException();
             
             const int size = sizeof(double);
+            ThrowIfEndOfBuffer(size);
+            
             var x = MemoryMarshal.Read<double>(_buffer.Slice(Offset).Span);
             Offset += size;
             return x;
@@ -228,25 +266,31 @@ namespace Krypton.Buffers
         public Guid ReadGuid()
         {
             const int size = 16;
+            ThrowIfEndOfBuffer(size);
+            
             var guid = new Guid(_buffer.Slice(Offset, size).Span);
             Offset += size;    
             return guid;
         }
 
-        public string ReadString8()
+        public string ReadString(Encoding encoding)
         {
-            var size = ReadUInt16();
-            return string.Create(size, this, (str, reader) =>
-            {
-                for (var i = 0; i < str.Length; i++)
-                    str[i] = (char) reader.ReadUInt8();
-            });
+            var length = ReadUInt16();
+            var bytes = ReadBytes(length);
+            return encoding.GetString(bytes.Span);
         }
 
+        public string ReadUTF8String()
+            => ReadString(Encoding.UTF8);
+
+        public string ReadUTF16String()
+            => ReadString(Encoding.Unicode);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SkipBytes(int n)
+        public void SkipBytes(int count)
         {
-            Offset += (ushort)n;
+            ThrowIfEndOfBuffer(count);
+            Offset += (ushort)count;
         }
 
         public ReadOnlyMemory<byte> RemainingData => _buffer.Slice(Offset);

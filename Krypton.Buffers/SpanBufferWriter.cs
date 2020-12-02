@@ -3,10 +3,11 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Krypton.Buffers
 {
-    public ref struct GrowingSpanBuffer
+    public ref struct SpanBufferWriter
     {
         public readonly struct Bookmark
         {
@@ -19,31 +20,62 @@ namespace Krypton.Buffers
                 Size = size;
             }
         }
+
+        private readonly bool _resize;
         
-        public static int GROWTH_FACTOR = 2;
+        private readonly IPoolingStrategy _poolingStrategy;
+
+        private byte[] _pooledBuffer;
 
         private Span<byte> _buffer;
 
         private int _offset;
 
-        public GrowingSpanBuffer(Span<byte> buffer)
+        /// <summary>
+        /// Creates a new SpanBufferWriter that is based off an existing buffer
+        /// </summary>
+        /// <param name="buffer">The buffer</param>
+        /// <param name="resize">If the buffer can resize</param>
+        /// <param name="poolingStrategy">The pooling strategy used when resizing the buffer</param>
+        public SpanBufferWriter(Span<byte> buffer, bool resize = true, IPoolingStrategy poolingStrategy = null)
         {
+            _resize = resize;
+            _poolingStrategy = poolingStrategy ?? DefaultPoolingStrategy.Instance;
+            _pooledBuffer = null;
             _buffer = buffer;
+            _offset = 0;
+        }
+
+        /// <summary>
+        /// Creates a new SpanBufferWriter that allocates its initial buffer from a pool
+        /// </summary>
+        /// <param name="size">The initial buffer size</param>
+        /// <param name="resize">If the buffer can resize</param>
+        /// <param name="poolingStrategy">The pooling strategy used when resizing the buffer</param>
+        public SpanBufferWriter(int size, bool resize = true, IPoolingStrategy poolingStrategy = null)
+        {
+            _resize = resize;
+            _poolingStrategy = poolingStrategy ?? DefaultPoolingStrategy.Instance;
+            _pooledBuffer = _poolingStrategy.Resize(1, size);
+            _buffer = _pooledBuffer.AsSpan();
             _offset = 0;
         }
 
         private void Reserve(int length)
         {
-            if (_offset + length < _buffer.Length)
+            if (_offset + length <= _buffer.Length)
                 return;
+            
+            // If we can't resize we need to let the user know we are out of space
+            if (!_resize)
+                throw new OutOfSpaceException(_buffer.Length, _offset, _offset + length);
 
-            var newLength = _buffer.Length * GROWTH_FACTOR;
-            while (_offset + length > newLength)
-                newLength *= GROWTH_FACTOR;
-
-            var newBuffer = new byte[newLength];
-            _buffer.CopyTo(newBuffer);
-            _buffer = newBuffer;
+            var resized = _poolingStrategy.Resize(_buffer.Length, _offset + length);
+            _buffer.CopyTo(resized.AsSpan());
+            if (_pooledBuffer != null)
+                _poolingStrategy.Free(_pooledBuffer);
+            _pooledBuffer = resized;
+            _buffer = resized.AsSpan();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -153,15 +185,25 @@ namespace Krypton.Buffers
             _offset += size;
         }
 
-        public void WriteString8(string x)
+        public void WriteString(string str, Encoding encoding)
         {
-            Reserve(x.Length + 2);
-            BinaryPrimitives.WriteUInt16LittleEndian(_buffer.Slice(_offset), (ushort)x.Length);
+            var byteCount = encoding.GetByteCount(str);
+            
+            Reserve(byteCount + 2);
+            BinaryPrimitives.WriteUInt16LittleEndian(_buffer.Slice(_offset), (ushort)byteCount);
             _offset += 2;
-
-            for (var i = 0; i < x.Length; i++)
-                _buffer[_offset++] = (byte)x[i];
+            
+            var bytes = byteCount < 512 ? stackalloc byte[byteCount] : new byte[byteCount];
+            encoding.GetBytes(str.AsSpan(), bytes);
+            bytes.CopyTo(_buffer.Slice(_offset, byteCount));
+            _offset += byteCount;
         }
+        
+        public void WriteUTF8String(string str)
+            => WriteString(str, Encoding.UTF8);
+        
+        public void WriteUTF16String(string str)
+            => WriteString(str, Encoding.Unicode);
 
         public void WriteBytes(ReadOnlySpan<byte> x)
         {
@@ -190,8 +232,21 @@ namespace Krypton.Buffers
             _offset += n;
         }
 
+        public void Dispose()
+        {
+            if (_pooledBuffer == null)
+                return;
+
+            _poolingStrategy.Free(_pooledBuffer);
+            _pooledBuffer = null;
+            _buffer = Span<byte>.Empty;
+            _offset = 0;
+        }
+
         public ReadOnlySpan<byte> Data => _buffer.Slice(0, _offset);
 
         public int Size => _offset;
+
+        public static implicit operator ReadOnlySpan<byte>(SpanBufferWriter buffer) => buffer.Data;
     }
 }
