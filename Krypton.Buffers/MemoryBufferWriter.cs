@@ -25,7 +25,7 @@ namespace Krypton.Buffers
         
         private readonly IPoolingStrategy _poolingStrategy;
 
-        private Memory<byte> _pooledBuffer;
+        private byte[] _pooledBuffer;
         
         private Memory<byte> _buffer;
 
@@ -41,7 +41,7 @@ namespace Krypton.Buffers
         {
             _resize = resize;
             _poolingStrategy = poolingStrategy ?? DefaultPoolingStrategy.Instance;
-            _pooledBuffer = Memory<byte>.Empty;
+            _pooledBuffer = null;
             _buffer = buffer;
             _offset = 0;
         }
@@ -72,7 +72,7 @@ namespace Krypton.Buffers
 
             var resized = _poolingStrategy.Resize(_buffer.Length, _offset + length);
             _buffer.CopyTo(resized);
-            if (!_pooledBuffer.IsEmpty)
+            if (_pooledBuffer != null)
                 _poolingStrategy.Free(_pooledBuffer);
             _pooledBuffer = resized;
             _buffer = resized;
@@ -234,11 +234,11 @@ namespace Krypton.Buffers
 
         public void Dispose()
         {
-            if (_pooledBuffer.IsEmpty) 
+            if (_pooledBuffer == null) 
                 return;
             
             _poolingStrategy.Free(_pooledBuffer);
-            _pooledBuffer = Memory<byte>.Empty;
+            _pooledBuffer = null;
             _buffer = Memory<byte>.Empty;
             _offset = 0;
         }

@@ -13,7 +13,7 @@ namespace Krypton.Buffers
         {
         }
         
-        public Memory<byte> Resize(int size, int neededSize)
+        public byte[] Resize(int size, int neededSize)
         {
             var newLength = size * GrowthFactor;
             while (neededSize > newLength)
@@ -21,7 +21,7 @@ namespace Krypton.Buffers
             return new byte[newLength];
         }
 
-        public void Free(Memory<byte> data)
+        public void Free(byte[] data)
         {
         }
     }

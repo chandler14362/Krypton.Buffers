@@ -25,7 +25,7 @@ namespace Krypton.Buffers
         
         private readonly IPoolingStrategy _poolingStrategy;
 
-        private Memory<byte> _pooledBuffer;
+        private byte[] _pooledBuffer;
 
         private Span<byte> _buffer;
 
@@ -41,7 +41,7 @@ namespace Krypton.Buffers
         {
             _resize = resize;
             _poolingStrategy = poolingStrategy ?? DefaultPoolingStrategy.Instance;
-            _pooledBuffer = Memory<byte>.Empty;
+            _pooledBuffer = null;
             _buffer = buffer;
             _offset = 0;
         }
@@ -57,7 +57,7 @@ namespace Krypton.Buffers
             _resize = resize;
             _poolingStrategy = poolingStrategy ?? DefaultPoolingStrategy.Instance;
             _pooledBuffer = _poolingStrategy.Resize(1, size);
-            _buffer = _pooledBuffer.Span;
+            _buffer = _pooledBuffer.AsSpan();
             _offset = 0;
         }
 
@@ -71,11 +71,11 @@ namespace Krypton.Buffers
                 throw new OutOfSpaceException(_buffer.Length, _offset, _offset + length);
 
             var resized = _poolingStrategy.Resize(_buffer.Length, _offset + length);
-            _buffer.CopyTo(resized.Span);
-            if (!_pooledBuffer.IsEmpty)
+            _buffer.CopyTo(resized.AsSpan());
+            if (_pooledBuffer != null)
                 _poolingStrategy.Free(_pooledBuffer);
             _pooledBuffer = resized;
-            _buffer = resized.Span;
+            _buffer = resized.AsSpan();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -234,11 +234,11 @@ namespace Krypton.Buffers
 
         public void Dispose()
         {
-            if (_pooledBuffer.IsEmpty)
+            if (_pooledBuffer == null)
                 return;
 
             _poolingStrategy.Free(_pooledBuffer);
-            _pooledBuffer = Memory<byte>.Empty;
+            _pooledBuffer = null;
             _buffer = Span<byte>.Empty;
             _offset = 0;
         }
