@@ -1,4 +1,4 @@
-# Krypton.Buffers (2.0.0)
+# Krypton.Buffers (2.0.1)
 
 ## Types
 
