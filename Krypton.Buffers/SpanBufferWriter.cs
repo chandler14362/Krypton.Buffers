@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Krypton.Buffers
 {
@@ -184,15 +185,25 @@ namespace Krypton.Buffers
             _offset += size;
         }
 
-        public void WriteString8(string x)
+        public void WriteString(string str, Encoding encoding)
         {
-            Reserve(x.Length + 2);
-            BinaryPrimitives.WriteUInt16LittleEndian(_buffer.Slice(_offset), (ushort)x.Length);
+            var byteCount = encoding.GetByteCount(str);
+            
+            Reserve(byteCount + 2);
+            BinaryPrimitives.WriteUInt16LittleEndian(_buffer.Slice(_offset), (ushort)byteCount);
             _offset += 2;
-
-            for (var i = 0; i < x.Length; i++)
-                _buffer[_offset++] = (byte)x[i];
+            
+            var bytes = byteCount < 512 ? stackalloc byte[byteCount] : new byte[byteCount];
+            encoding.GetBytes(str.AsSpan(), bytes);
+            bytes.CopyTo(_buffer.Slice(_offset, byteCount));
+            _offset += byteCount;
         }
+        
+        public void WriteUTF8String(string str)
+            => WriteString(str, Encoding.UTF8);
+        
+        public void WriteUTF16String(string str)
+            => WriteString(str, Encoding.Unicode);
 
         public void WriteBytes(ReadOnlySpan<byte> x)
         {

@@ -2,6 +2,7 @@
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Krypton.Buffers
 {
@@ -233,15 +234,18 @@ namespace Krypton.Buffers
             return guid;
         }
 
-        public string ReadString8()
+        public string ReadString(Encoding encoding)
         {
-            var size = ReadUInt16();
-            return string.Create(size, this, (str, reader) =>
-            {
-                for (var i = 0; i < str.Length; i++)
-                    str[i] = (char) reader.ReadUInt8();
-            });
+            var length = ReadUInt16();
+            var bytes = ReadBytes(length);
+            return encoding.GetString(bytes.Span);
         }
+
+        public string ReadUTF8String()
+            => ReadString(Encoding.UTF8);
+
+        public string ReadUTF16String()
+            => ReadString(Encoding.Unicode);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SkipBytes(int n)
