@@ -63,7 +63,7 @@ namespace Krypton.Buffers
 
         private void Reserve(int length)
         {
-            if (_offset + length < _buffer.Length)
+            if (_offset + length <= _buffer.Length)
                 return;
             
             // If we can't resize we need to let the user know we are out of space
