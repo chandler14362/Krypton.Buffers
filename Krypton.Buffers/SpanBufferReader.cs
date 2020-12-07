@@ -266,8 +266,11 @@ namespace Krypton.Buffers
         {
             const int size = 16;
             ThrowIfEndOfBuffer(size);
-            
+#if NETSTANDARD2_1
             var guid = new Guid(_buffer.Slice(Offset, size));
+#else
+            var guid = new Guid(_buffer.Slice(Offset, size).ToArray());
+#endif
             Offset += size;    
             return guid;
         }
@@ -276,7 +279,11 @@ namespace Krypton.Buffers
         {
             var length = ReadUInt16();
             var bytes = ReadBytes(length);
+#if NETSTANDARD2_1
             return encoding.GetString(bytes);
+#else
+            return encoding.GetString(bytes.ToArray());
+#endif
         }
 
         public string ReadUTF8String()

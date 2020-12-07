@@ -181,7 +181,11 @@ namespace Krypton.Buffers
         {
             const int size = 16;
             Reserve(16);
+#if NETSTANDARD2_1
             _ = guid.TryWriteBytes(_buffer.Slice(_offset));
+#else
+            guid.ToByteArray().AsSpan().CopyTo(_buffer.Slice(_offset, size));
+#endif
             _offset += size;
         }
 
@@ -193,9 +197,12 @@ namespace Krypton.Buffers
             BinaryPrimitives.WriteUInt16LittleEndian(_buffer.Slice(_offset), (ushort)byteCount);
             _offset += 2;
             
-            var bytes = byteCount < 512 ? stackalloc byte[byteCount] : new byte[byteCount];
+            var bytes = _buffer.Slice(_offset, byteCount);
+#if NETSTANDARD2_1
             encoding.GetBytes(str.AsSpan(), bytes);
-            bytes.CopyTo(_buffer.Slice(_offset, byteCount));
+#else
+            encoding.GetBytes(str).AsSpan().CopyTo(bytes);
+#endif
             _offset += byteCount;
         }
         
