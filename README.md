@@ -33,7 +33,7 @@ If you want to write to a fixed size buffer without any resizing you can do so.
 ```cs
 try 
 {
-    using var bufferWriter = new SpanBufferWriter(someFixedSizeBuffer, resize: false);
+    var bufferWriter = new SpanBufferWriter(someFixedSizeBuffer, resize: false);
     bufferWriter.WriteUTF8String("I hope there is enough space for this");
 }
 catch (OutOfSpaceException)
@@ -64,7 +64,7 @@ There is more info on the pooling strategies below.
 ### Safe Allocation Free Buffer Writing with SpanBufferWriter
 Example 1:
 ```cs
-using var bufferWriter = new SpanBufferWriter(stackalloc byte[64]); // initial buffer exists on the stack
+var bufferWriter = new SpanBufferWriter(stackalloc byte[64]); // initial buffer exists on the stack
 bufferWriter.WriteUInt64(0);
 bufferWriter.WriteUTF8String("test");
 Socket.Write(bufferWriter.Data);
@@ -72,7 +72,7 @@ Socket.Write(bufferWriter.Data);
 
 Example 2:
 ```cs
-using var bufferWriter = new SpanBufferWriter(stackalloc byte[8]); // initial buffer exists on the stack
+var bufferWriter = new SpanBufferWriter(stackalloc byte[8]); // initial buffer exists on the stack
 bufferWriter.WriteUInt64(0);
 bufferWriter.WriteUInt64(0); // we resize on the heap here
 Socket.Write(bufferWriter); // implicit ReadOnlySpan<byte> cast
@@ -84,7 +84,7 @@ Bookmarks are used for reserving a set number of bytes and writing to them later
 
 Example:
 ```cs
-using var bufferWriter = new SpanBufferWriter(stackalloc byte[64]);
+var bufferWriter = new SpanBufferWriter(stackalloc byte[64]);
 
 // strs is an IEnumerable<string>. Lets write the count after we enumerate through it
 ushort count = 0;
@@ -155,6 +155,7 @@ public class ExamplePoolingStrategy : IPoolingStrategy
     }
 }
 
+// Notice we use `using` here. This is so we can dispose of the buffer writer and free the potentially rented array
 using var bufferWriter = new SpanBufferWriter(stackalloc byte[4], poolingStrategy: ExamplePoolingStrategy.Instance);
 bufferWriter.WriteUInt32(4); // this gets written to the initial buffer that exists on the stack
 bufferWriter.WriteUTF16String("hello heap!"); // the buffer resizes using ArrayPool and the data gets relocated on to the heap
