@@ -1,4 +1,6 @@
-# Krypton.Buffers (2.0.2)
+# Krypton.Buffers
+
+[![NuGet version (Krypton.Buffers)](https://img.shields.io/nuget/v/Krypton.Buffers.svg?style=flat-square)](https://www.nuget.org/packages/Krypton.Buffers/)
 
 ## Types
 
