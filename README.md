@@ -25,6 +25,8 @@ Currently the readers/writers support the following types:
 
 There is a corresponding Read/Write method for each. Data is written in little endian
 
+NOTE: The Span reader and writer types are both defined as a `ref struct`. When using your Span reader/writer as an argument make sure to pass by ref.
+
 ## Buffer Options
 
 By default all buffers are set to resize. The default pooling strategy is no pooling at all, each time the writer needs to resize a new byte array is allocated.
