@@ -1,5 +1,3 @@
-using System;
-
 namespace Krypton.Buffers
 {
     // Default pooling strategy is no pooling at all
@@ -13,10 +11,10 @@ namespace Krypton.Buffers
         {
         }
         
-        public byte[] Resize(int size, int neededSize)
+        public byte[] Resize(int size, int neededLength)
         {
             var newLength = size * GrowthFactor;
-            while (neededSize > newLength)
+            while (neededLength > newLength)
                 newLength *= GrowthFactor;
             return new byte[newLength];
         }

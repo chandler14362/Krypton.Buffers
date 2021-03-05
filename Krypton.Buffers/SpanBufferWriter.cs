@@ -61,16 +61,22 @@ namespace Krypton.Buffers
             _offset = 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Reserve(int length)
         {
-            if (_offset + length <= _buffer.Length)
+            var neededLength = _offset + length;
+            if (neededLength <= _buffer.Length)
                 return;
-            
+            ResizeBuffer(neededLength);
+        }
+
+        private void ResizeBuffer(int neededLength)
+        {
             // If we can't resize we need to let the user know we are out of space
             if (!_resize)
-                throw new OutOfSpaceException(_buffer.Length, _offset, _offset + length);
+                throw new OutOfSpaceException(_buffer.Length, _offset, neededLength);
 
-            var resized = _poolingStrategy.Resize(_buffer.Length, _offset + length);
+            var resized = _poolingStrategy.Resize(_buffer.Length, neededLength);
             _buffer.CopyTo(resized.AsSpan());
             if (_pooledBuffer != null)
                 _poolingStrategy.Free(_pooledBuffer);

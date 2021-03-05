@@ -8,9 +8,9 @@ namespace Krypton.Buffers
         /// Called whenever a buffer writer needs to resize
         /// </summary>
         /// <param name="size">The current size of the buffer</param>
-        /// <param name="neededSize">The needed size of the buffer</param>
+        /// <param name="neededLength">The needed length of the buffer</param>
         /// <returns>The resized buffer</returns>
-        byte[] Resize(int size, int neededSize);
+        byte[] Resize(int size, int neededLength);
 
         /// <summary>
         /// Called whenever a buffer writer needs to free pooled data
