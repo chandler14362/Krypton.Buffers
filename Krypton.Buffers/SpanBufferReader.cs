@@ -32,6 +32,13 @@ namespace Krypton.Buffers
             Offset += count;
             return slice;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadBytes(int count, out ReadOnlySpan<byte> slice)
+        {
+            slice = ReadBytes(count);
+            return this;
+        }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadByte()
@@ -41,9 +48,23 @@ namespace Krypton.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadByte(out byte value)
+        {
+            value = ReadByte();
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadUInt8()
         {
             return ReadByte();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadUInt8(out byte value)
+        {
+            value = ReadUInt8();
+            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -53,9 +74,23 @@ namespace Krypton.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadInt8(out sbyte value)
+        {
+            value = ReadInt8();
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ReadBool()
         {
             return ReadUInt8() == 1 ? true : false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadBool(out bool value)
+        {
+            value = ReadBool();
+            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -67,6 +102,13 @@ namespace Krypton.Buffers
             var x = BinaryPrimitives.ReadUInt16LittleEndian(_buffer.Slice(Offset));
             Offset += size;
             return x;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadUInt16(out ushort value)
+        {
+            value = ReadUInt16();
+            return this;
         }
 
         public ReadOnlySpan<ushort> ReadUInt16Slice(int count)
@@ -88,6 +130,13 @@ namespace Krypton.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadUInt16Slice(int count, out ReadOnlySpan<ushort> slice)
+        {
+            slice = ReadUInt16Slice(count);
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public short ReadInt16()
         {
             const int size = sizeof(short);
@@ -98,6 +147,13 @@ namespace Krypton.Buffers
             return x;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadInt16(out short value)
+        {
+            value = ReadInt16();
+            return this;
+        }
+
         public ReadOnlySpan<short> ReadInt16Slice(int count)
         {
             const int isize = sizeof(short);
@@ -117,6 +173,13 @@ namespace Krypton.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadInt16Slice(int count, out ReadOnlySpan<short> slice)
+        {
+            slice = ReadInt16Slice(count);
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint ReadUInt32()
         {
             const int size = sizeof(uint);
@@ -125,6 +188,13 @@ namespace Krypton.Buffers
             var x = BinaryPrimitives.ReadUInt32LittleEndian(_buffer.Slice(Offset));
             Offset += size;
             return x;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadUInt32(out uint value)
+        {
+            value = ReadUInt32();
+            return this;
         }
 
         public ReadOnlySpan<uint> ReadUInt32Slice(int count)
@@ -146,6 +216,13 @@ namespace Krypton.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadUInt32Slice(int count, out ReadOnlySpan<uint> slice)
+        {
+            slice = ReadUInt32Slice(count);
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int ReadInt32()
         {
             const int size = sizeof(int);
@@ -154,6 +231,13 @@ namespace Krypton.Buffers
             var x = BinaryPrimitives.ReadInt32LittleEndian(_buffer.Slice(Offset));
             Offset += size;
             return x;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadInt32(out int value)
+        {
+            value = ReadInt32();
+            return this;
         }
         
         public ReadOnlySpan<int> ReadInt32Slice(int count)
@@ -175,6 +259,13 @@ namespace Krypton.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadInt32Slice(int count, out ReadOnlySpan<int> slice)
+        {
+            slice = ReadInt32Slice(count);
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ulong ReadUInt64()
         {
             const int size = sizeof(ulong);
@@ -183,6 +274,13 @@ namespace Krypton.Buffers
             var x = BinaryPrimitives.ReadUInt64LittleEndian(_buffer.Slice(Offset));
             Offset += size;
             return x;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadUInt64(out ulong value)
+        {
+            value = ReadUInt64();
+            return this;
         }
 
         public ReadOnlySpan<ulong> ReadUInt64Slice(int count)
@@ -204,6 +302,13 @@ namespace Krypton.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadUInt64Slice(int count, out ReadOnlySpan<ulong> slice)
+        {
+            slice = ReadUInt64Slice(count);
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public long ReadInt64()
         {
             const int size = sizeof(long);
@@ -212,6 +317,13 @@ namespace Krypton.Buffers
             var x = BinaryPrimitives.ReadInt64LittleEndian(_buffer.Slice(Offset));
             Offset += size;
             return x;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadInt64(out long value)
+        {
+            value = ReadInt64();
+            return this;
         }
 
         public ReadOnlySpan<long> ReadInt64Slice(int count)
@@ -231,6 +343,13 @@ namespace Krypton.Buffers
 
             return flipped;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadInt64Slice(int count, out ReadOnlySpan<long> slice)
+        {
+            slice = ReadInt64Slice(count);
+            return this;
+        }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float ReadFloat32()
@@ -248,6 +367,13 @@ namespace Krypton.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadFloat32(out float value)
+        {
+            value = ReadFloat32();
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public double ReadFloat64()
         {
             // TODO: big endian support
@@ -260,6 +386,13 @@ namespace Krypton.Buffers
             var x = MemoryMarshal.Read<double>(_buffer.Slice(Offset));
             Offset += size;
             return x;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadFloat64(out double value)
+        {
+            value = ReadFloat64();
+            return this;
         }
 
         public Guid ReadGuid()
@@ -275,6 +408,13 @@ namespace Krypton.Buffers
             return guid;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadGuid(out Guid value)
+        {
+            value = ReadGuid();
+            return this;
+        }
+
         public string ReadString(Encoding encoding)
         {
             var length = ReadUInt16();
@@ -286,16 +426,38 @@ namespace Krypton.Buffers
 #endif
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadString(Encoding encoding, out string value)
+        {
+            value = ReadString(encoding);
+            return this;
+        }
+
         public string ReadUTF8String()
             => ReadString(Encoding.UTF8);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadUTF8String(out string value)
+        {
+            value = ReadUTF8String();
+            return this;
+        }
 
         public string ReadUTF16String()
             => ReadString(Encoding.Unicode);
         
-        public void SkipBytes(int count)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanBufferReader ReadUTF16String(out string value)
+        {
+            value = ReadUTF16String();
+            return this;
+        }
+
+        public SpanBufferReader SkipBytes(int count)
         {
             ThrowIfEndOfBuffer(count);
             Offset += count;
+            return this;
         }
 
         public ReadOnlySpan<byte> RemainingData => _buffer.Slice(Offset);

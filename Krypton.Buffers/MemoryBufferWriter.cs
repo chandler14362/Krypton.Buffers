@@ -85,81 +85,97 @@ namespace Krypton.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteBool(bool x)
+        public MemoryBufferWriter Start()
+        {
+            _offset = 0;
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public MemoryBufferWriter WriteBool(bool x)
         {
             Reserve(1);
             _buffer.Span[_offset++] = x ? (byte)1 : (byte)0;
+            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteInt8(sbyte x)
+        public MemoryBufferWriter WriteInt8(sbyte x)
         {
             Reserve(1);
             _buffer.Span[_offset++] = (byte)x;
+            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteUInt8(byte x)
+        public MemoryBufferWriter WriteUInt8(byte x)
         {
             Reserve(1);
             _buffer.Span[_offset++] = x;
+            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteInt16(short x)
+        public MemoryBufferWriter WriteInt16(short x)
         {
             const int size = sizeof(short);
             Reserve(size);
             BinaryPrimitives.WriteInt16LittleEndian(_buffer.Span.Slice(_offset), x);
             _offset += size;
+            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteUInt16(ushort x)
+        public MemoryBufferWriter WriteUInt16(ushort x)
         {
             const int size = sizeof(ushort);
             Reserve(size);
             BinaryPrimitives.WriteUInt16LittleEndian(_buffer.Span.Slice(_offset), x);
             _offset += size;
+            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteInt32(int x)
+        public MemoryBufferWriter WriteInt32(int x)
         {
             const int size = sizeof(int);
             Reserve(size);
             BinaryPrimitives.WriteInt32LittleEndian(_buffer.Span.Slice(_offset), x);
             _offset += size;
+            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteUInt32(uint x)
+        public MemoryBufferWriter WriteUInt32(uint x)
         {
             const int size = sizeof(uint);
             Reserve(size);
             BinaryPrimitives.WriteUInt32LittleEndian(_buffer.Span.Slice(_offset), x);
             _offset += size;
+            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteUInt64(ulong x)
+        public MemoryBufferWriter WriteUInt64(ulong x)
         {
             const int size = sizeof(ulong);
             Reserve(size);
             BinaryPrimitives.WriteUInt64LittleEndian(_buffer.Span.Slice(_offset), x);
             _offset += size;
+            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteInt64(long x)
+        public MemoryBufferWriter WriteInt64(long x)
         {
             const int size = sizeof(long);
             Reserve(size);
             BinaryPrimitives.WriteInt64LittleEndian(_buffer.Span.Slice(_offset), x);
             _offset += size;
+            return this;
         }
 
-        public void WriteFloat32(float x)
+        public MemoryBufferWriter WriteFloat32(float x)
         {
             // TODO: big endian support
             if (!BitConverter.IsLittleEndian)
@@ -169,9 +185,10 @@ namespace Krypton.Buffers
             Reserve(size);
             MemoryMarshal.Write(_buffer.Span.Slice(_offset), ref x);
             _offset += size;
+            return this;
         }
 
-        public void WriteFloat64(double x)
+        public MemoryBufferWriter WriteFloat64(double x)
         {
             // TODO: big endian support
             if (!BitConverter.IsLittleEndian)
@@ -181,9 +198,10 @@ namespace Krypton.Buffers
             Reserve(size);            
             MemoryMarshal.Write(_buffer.Span.Slice(_offset), ref x);
             _offset += size;
+            return this;
         }
         
-        public void WriteGuid(Guid guid)
+        public MemoryBufferWriter WriteGuid(Guid guid)
         {
             const int size = 16;
             Reserve(16);
@@ -193,9 +211,10 @@ namespace Krypton.Buffers
             guid.ToByteArray().AsSpan().CopyTo(_buffer.Slice(_offset, size).Span);
 #endif
             _offset += size;
+            return this;
         }
 
-        public void WriteString(string str, Encoding encoding)
+        public MemoryBufferWriter WriteString(string str, Encoding encoding)
         {
             var byteCount = encoding.GetByteCount(str);
             
@@ -210,19 +229,21 @@ namespace Krypton.Buffers
             encoding.GetBytes(str).AsSpan().CopyTo(bytes);
 #endif
             _offset += byteCount;
+            return this;
         }
         
-        public void WriteUTF8String(string str)
+        public MemoryBufferWriter WriteUTF8String(string str)
             => WriteString(str, Encoding.UTF8);
         
-        public void WriteUTF16String(string str)
+        public MemoryBufferWriter WriteUTF16String(string str)
             => WriteString(str, Encoding.Unicode);
 
-        public void WriteBytes(ReadOnlySpan<byte> x)
+        public MemoryBufferWriter WriteBytes(ReadOnlySpan<byte> x)
         {
             Reserve(x.Length);
             x.CopyTo(_buffer.Span.Slice(_offset));
             _offset += x.Length;
+            return this;
         }
         
         public Bookmark ReserveBookmark(int size)
@@ -233,16 +254,18 @@ namespace Krypton.Buffers
             return bookmark;
         }
 
-        public void WriteBookmark<TState>(in Bookmark bookmark, TState state, SpanAction<byte, TState> output)
+        public MemoryBufferWriter WriteBookmark<TState>(in Bookmark bookmark, TState state, SpanAction<byte, TState> output)
         {
             var slice = _buffer.Slice(bookmark.Offset, bookmark.Size);
             output(slice.Span, state);
+            return this;
         }
 
-        public void PadBytes(int n)
+        public MemoryBufferWriter PadBytes(int n)
         {
             Reserve(n);
             _offset += n;
+            return this;
         }
 
         public void Dispose()

@@ -5,7 +5,7 @@
     <LangVersion>8</LangVersion>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <PackageId>Krypton.Buffers</PackageId>
-    <Version>2.0.3</Version>
+    <Version>2.1.0</Version>
     <Authors>Chandler Stowell</Authors>
     <PackageDescription>Types for reading and writing Span/Memory buffers.</PackageDescription>
     <RepositoryUrl>https://github.com/chandler14362/Krypton.Buffers.git</RepositoryUrl>
